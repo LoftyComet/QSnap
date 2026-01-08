@@ -205,3 +205,22 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node/Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/.env*
+.npm
+*-debug.log*
+*-error.log*
+.vercel
+
+# Visual Studio Code
+.vscode/
+
+# Project specific
+backend/static/uploads/*
+!backend/static/uploads/.gitkeep

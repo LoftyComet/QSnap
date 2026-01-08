@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+python-docx
+opencv-python
+numpy
+sqlalchemy
+pydantic
+langchain
+langchain-openai
+python-dotenv
+easyocr
+torch
+torchvision
