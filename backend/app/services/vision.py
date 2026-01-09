@@ -133,3 +133,29 @@ def process_image(image_path: str, output_dir: str):
         })
     
     return question_blocks
+
+def extract_text_full_page(image_path: str) -> str:
+    """
+    Performs OCR on the full image without segmentation.
+    """
+    try:
+        if not os.path.exists(image_path):
+             return ""
+        
+        # Robust reading
+        stream = np.fromfile(image_path, dtype=np.uint8)
+        img = cv2.imdecode(stream, cv2.IMREAD_COLOR)
+        if img is None:
+             img = cv2.imread(image_path)
+        
+        if img is None:
+             return ""
+
+        reader = get_reader()
+        # detail=0 returns just the list of strings
+        result = reader.readtext(img, detail=0)
+        return "\n".join(result)
+    except Exception as e:
+        print(f"Error in extract_text_full_page: {e}")
+        return ""
+

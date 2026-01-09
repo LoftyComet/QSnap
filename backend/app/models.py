@@ -24,7 +24,10 @@ class Question(Base):
     bbox_json = Column(String) # JSON string of [x, y, w, h]
     
     ocr_text = Column(Text, default="")
-    solution_text = Column(Text, default="")
+    solution_text = Column(Text, default="") # Kept for backward compatibility or full json fallback
+    answer = Column(Text, default="")
+    analysis = Column(Text, default="")
+    is_incomplete = Column(Boolean, default=False)
     
     order_index = Column(Integer, default=0)
     

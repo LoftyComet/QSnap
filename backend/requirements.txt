@@ -12,3 +12,6 @@ python-dotenv
 easyocr
 torch
 torchvision
+
+pytest
+httpx

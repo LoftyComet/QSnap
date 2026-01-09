@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FileText, Clock } from 'lucide-react';
+import { FileText, Clock, Trash2 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
 
@@ -20,27 +20,49 @@ export default function Dashboard({ onSelectPaper }: { onSelectPaper: (id: numbe
     }
   };
 
+  const deletePaper = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this paper?')) return;
+    
+    try {
+      await axios.delete(`${API_URL}/papers/${id}`);
+      setPapers(papers.filter(p => p.id !== id));
+    } catch (error) {
+      console.error('Failed to delete paper:', error);
+      alert('Failed to delete paper');
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
       {papers.map((p) => (
         <div 
             key={p.id} 
             onClick={() => onSelectPaper(p.id)}
-            className="group bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 cursor-pointer transition-all duration-200 transform hover:-translate-y-1"
+            className="group bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 relative"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="p-2.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
                 <FileText className="w-6 h-6 text-blue-600" />
             </div>
-            {p.is_processed ? (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Processed
-                </span>
-            ) : (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    Processing
-                </span>
-            )}
+             <div className="flex gap-2">
+                {p.is_processed ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Processed
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Processing
+                    </span>
+                )}
+                
+                <button 
+                    onClick={(e) => deletePaper(e, p.id)}
+                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                >
+                    <Trash2 className="w-4 h-4" />
+                </button>
+            </div>
           </div>
           
           <h3 className="text-lg font-semibold text-gray-900 truncate pr-2 group-hover:text-blue-600 transition-colors">
