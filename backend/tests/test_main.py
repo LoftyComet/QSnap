@@ -40,9 +40,19 @@ def test_read_root():
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World"}
 
-def test_upload_paper():
+@pytest.fixture
+def cleanup_upload():
+    uploaded_files = []
+    yield uploaded_files
+    for path in uploaded_files:
+        if os.path.exists(path):
+            os.remove(path)
+
+def test_upload_paper(cleanup_upload):
     # Helper to clean up uploaded file
     test_filename = "test_upload_image.jpg"
+    expected_path = f"static/uploads/{test_filename}"
+    cleanup_upload.append(expected_path)
     
     # Create a dummy image file content
     file_content = b"fake image content"
@@ -57,11 +67,3 @@ def test_upload_paper():
     data = response.json()
     assert "id" in data
     assert data["filename"] == test_filename
-    
-    # Clean up file if created
-    # Note: app/main.py uses "static/uploads" relative to working dir
-    # Tests usually run from root or backend dir.
-    # To be safe we could mock `open` or cleanup.
-    expected_path = f"static/uploads/{test_filename}"
-    if os.path.exists(expected_path):
-        os.remove(expected_path)

@@ -51,7 +51,7 @@ def test_process_image_success(mock_get_reader, mock_os, mock_np, mock_cv2):
     # 5. OCR Reader Mock
     mock_reader_instance = MagicMock()
     mock_get_reader.return_value = mock_reader_instance
-    # readtext returns list of strings when detail=0 (FIXED)
+    # readtext returns list of strings when detail=0
     mock_reader_instance.readtext.return_value = ["Question 1"]
         
     # Run
