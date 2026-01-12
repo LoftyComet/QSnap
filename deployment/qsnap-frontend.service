@@ -1,0 +1,15 @@
+[Unit]
+Description=QSnap Frontend
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/QSnap/frontend
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+# Explicitly using the next executable is often more reliable
+ExecStart=/usr/bin/npm start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

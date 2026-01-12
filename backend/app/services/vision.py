@@ -1,20 +1,12 @@
 import cv2
 import numpy as np
 import os
-import easyocr
 import uuid
 import json
 import subprocess
 
-# Global reader instance (initialize once to avoid reloading model)
-_reader = None
+from . import llm
 
-def get_reader():
-    global _reader
-    if _reader is None:
-        # gpu=False assumes no CUDA; change to True if user has NVIDIA GPU
-        _reader = easyocr.Reader(['ch_sim', 'en'], gpu=False)
-    return _reader
 
 def process_image(image_path: str, output_dir: str):
     """
@@ -38,6 +30,7 @@ def process_image(image_path: str, output_dir: str):
     except Exception as e:
         print(f"Error reading image via imdecode: {e}")
         img = None
+
 
     if img is None:
         # Fallback to standard read (sometimes useful)
@@ -96,15 +89,16 @@ def process_image(image_path: str, output_dir: str):
         # Assuming output_dir ends in "static/uploads"
         # We want "static/uploads/crop_..." usually, but let's return just filename and let caller handle
         
-        # OCR (Using EasyOCR for better Chinese support)
+        # OCR (Using LLM First, fallback to EasyOCR)
+        text = ""
         try:
-            reader = get_reader()
-            # EasyOCR can take the crop directly as a numpy array
-            result = reader.readtext(crop, detail=0)
-            text = " ".join(result)
-        except Exception as e:
-            # Fallback if OCR failed
-            print(f"Warning: OCR failed: {e}")
+            # Try OCR with LLM
+            text = llm.ocr_image(crop_path_abs)
+        except Exception:
+            pass # Fallthrough to local OCR if needed or if returns empty? 
+        
+        if not text:
+            print(f"Warning: OCR failed for crop, no text extracted.")
             text = ""
             
         question_blocks.append({
@@ -119,13 +113,13 @@ def process_image(image_path: str, output_dir: str):
         print("Warning: No distinct questions found. Returning full image.")
         full_filename = f"full_{uuid.uuid4()}.jpg"
         cv2.imwrite(os.path.join(output_dir, full_filename), img)
-        try:
-            reader = get_reader()
-            result = reader.readtext(img, detail=0)
-            text = " ".join(result)
-        except Exception:
-            text = ""
         
+        text = ""
+        try:
+            text = llm.ocr_image(os.path.join(output_dir, full_filename))
+        except Exception:
+            pass
+
         question_blocks.append({
             "bbox": [0, 0, img.shape[1], img.shape[0]],
             "image_filename": full_filename,
@@ -136,26 +130,8 @@ def process_image(image_path: str, output_dir: str):
 
 def extract_text_full_page(image_path: str) -> str:
     """
-    Performs OCR on the full image without segmentation.
+    Performs OCR on the full image using LLM ONLY.
     """
-    try:
-        if not os.path.exists(image_path):
-             return ""
-        
-        # Robust reading
-        stream = np.fromfile(image_path, dtype=np.uint8)
-        img = cv2.imdecode(stream, cv2.IMREAD_COLOR)
-        if img is None:
-             img = cv2.imread(image_path)
-        
-        if img is None:
-             return ""
+    return llm.ocr_image(image_path)
 
-        reader = get_reader()
-        # detail=0 returns just the list of strings
-        result = reader.readtext(img, detail=0)
-        return "\n".join(result)
-    except Exception as e:
-        print(f"Error in extract_text_full_page: {e}")
-        return ""
 

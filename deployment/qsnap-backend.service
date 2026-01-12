@@ -1,0 +1,13 @@
+[Unit]
+Description=QSnap Backend
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/QSnap/backend
+Environment="PATH=/root/QSnap/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/root/QSnap/backend/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

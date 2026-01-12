@@ -9,9 +9,6 @@ pydantic
 langchain
 langchain-openai
 python-dotenv
-easyocr
-torch
-torchvision
-
 pytest
 httpx
+
